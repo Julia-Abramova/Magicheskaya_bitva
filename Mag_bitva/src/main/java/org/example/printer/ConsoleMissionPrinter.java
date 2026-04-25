@@ -107,12 +107,30 @@ public class ConsoleMissionPrinter implements MissionPrintStrategy {
         System.out.println("  Риск огласки: " + ci.getPublicExposureRisk());
     }
 
-    private void printEnemyActivity(EnemyActivity ea) {
-        if (ea == null || ea.getBehaviorType() == null || ea.getBehaviorType().isEmpty()) return;
+        private void printEnemyActivity(EnemyActivity ea) {
+        if (ea == null || (ea.getBehaviorType() == null || ea.getBehaviorType().isEmpty())) {
+            return;
+        }
         System.out.println("\nАКТИВНОСТЬ ПРОТИВНИКА:");
         System.out.println("  Тип поведения:     " + ea.getBehaviorType());
         System.out.println("  Риск эскалации:    " + ea.getEscalationRisk());
         System.out.println("  Мобильность:       " + ea.getMobility());
+
+        if (!ea.getTargetPriority().isEmpty()) {
+            System.out.println("  Приоритет целей:   " + String.join(", ", ea.getTargetPriority()));
+        }
+        if (!ea.getAttackPatterns().isEmpty()) {
+            System.out.println("  Паттерны атаки:");
+            for (String pattern : ea.getAttackPatterns()) {
+                System.out.println("    • " + pattern);
+            }
+        }
+        if (!ea.getCountermeasuresUsed().isEmpty()) {
+            System.out.println("  Принятые меры:");
+            for (String measure : ea.getCountermeasuresUsed()) {
+                System.out.println("    • " + measure);
+            }
+        }
     }
 
     private void printEnvironmentConditions(EnvironmentConditions env) {

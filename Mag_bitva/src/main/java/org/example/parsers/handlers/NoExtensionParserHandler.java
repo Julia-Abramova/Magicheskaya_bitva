@@ -1,8 +1,8 @@
 package org.example.parsers.handlers;
 
-
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.example.model.*;
 import org.example.model.Parts_of_the_mission.*;
 import org.example.model.enums.*;
@@ -32,7 +32,6 @@ public class NoExtensionParserHandler extends BaseMissionParser {
                     if (parts.length < 2) continue;
 
                     String type = parts[0].trim();
-
                     parseCurrentLine(type, parts, builder);
                 }
             }
@@ -53,18 +52,22 @@ public class NoExtensionParserHandler extends BaseMissionParser {
                 case "TECHNIQUE_USED"    -> parseTechniqueUsed(parts, builder);
                 case "MISSION_RESULT"    -> parseMissionResult(parts, builder);
 
+                case "TIMELINE_EVENT"    -> parseTimelineEvent(parts, builder);
+                case "ENEMY_ACTION"      -> parseEnemyAction(parts, builder);
+                case "CIVILIAN_IMPACT"   -> parseCivilianImpact(parts, builder);
+
                 case "OPERATION_TAG"      -> parseOperationTag(parts, builder);
                 case "SUPPORT_UNIT"       -> parseSupportUnit(parts, builder);
                 case "RECOMMENDATION"     -> parseRecommendation(parts, builder);
                 case "ARTIFACT_RECOVERED" -> parseArtifactRecovered(parts, builder);
                 case "EVACUATION_ZONE"    -> parseEvacuationZone(parts, builder);
                 case "STATUS_EFFECT"      -> parseStatusEffect(parts, builder);
-
             }
         } catch (Exception e) {
+            System.err.println("Ошибка парсинга строки: " + String.join("|", parts));
         }
     }
-    
+
     private void parseMissionCreated(String[] parts, ConcreteMissionBuilder builder) {
         if (parts.length > 1) builder.buildMissionId(parts[1]);
         if (parts.length > 2) {
@@ -115,7 +118,52 @@ public class NoExtensionParserHandler extends BaseMissionParser {
                 builder.buildOutcome(Outcome.valueOf(parts[1]));
             } catch (Exception ignored) {}
         }
+        for (String part : parts) {
+            if (part.contains("damageCost=")) {
+                try {
+                    String val = part.split("=")[1].trim();
+                    builder.buildDamageCost(Long.parseLong(val));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
     }
+
+
+    private void parseTimelineEvent(String[] parts, ConcreteMissionBuilder builder) {
+        if (parts.length < 4) return;
+        try {
+            OperationTimeline timeline = new OperationTimeline();
+            timeline.setTimestamps(LocalDateTime.parse(parts[1]));
+            timeline.setType(parts[2]);
+            timeline.setDescription(parts[3]);
+            builder.addOperationTimeline(timeline);
+        } catch (Exception ignored) {}
+    }
+
+    private void parseEnemyAction(String[] parts, ConcreteMissionBuilder builder) {
+        if (parts.length < 3) return;
+        builder.addOperationTag("ENEMY: " + parts[1] + " - " + parts[2]);
+    }
+
+    private void parseCivilianImpact(String[] parts, ConcreteMissionBuilder builder) {
+        CivilianImpact ci = new CivilianImpact();
+        for (String p : parts) {
+            if (p.contains("=")) {
+                String[] kv = p.split("=", 2);
+                String key = kv[0].trim().toLowerCase();
+                String value = kv[1].trim();
+                try {
+                    switch (key) {
+                        case "evacuated" -> ci.setEvacuated(Integer.valueOf(value));
+                        case "injured"   -> ci.setInjured(Integer.valueOf(value));
+                        case "missing"   -> ci.setMissing(Integer.valueOf(value));
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        builder.buildCivilianImpact(ci);
+    }
+
 
     private void parseOperationTag(String[] parts, ConcreteMissionBuilder builder) {
         if (parts.length > 1) builder.addOperationTag(parts[1]);
