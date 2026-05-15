@@ -4,6 +4,7 @@ import org.example.model.Parts_of_the_mission.*;
 import org.example.model.enums.Outcome;
 
 public class ConcreteMissionBuilder extends MissionBuilder {
+    
 
     @Override
     public void buildMissionId(String missionId) {

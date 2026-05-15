@@ -7,11 +7,13 @@ import org.example.model.enums.Outcome;
 
 public abstract class MissionBuilder {
 
+
     protected Mission mission;
 
     public void createNewMission() {
         mission = new Mission();
     }
+
 
     public abstract void buildMissionId(String missionId);
     public abstract void buildDate(java.time.LocalDate date);
@@ -36,6 +38,7 @@ public abstract class MissionBuilder {
     public abstract void addArtifactRecovered(String artifact);
     public abstract void addEvacuationZone(String zone);
     public abstract void addStatusEffect(String effect);
+
 
     public Mission getMission() {
         return mission;

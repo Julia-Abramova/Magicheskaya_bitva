@@ -25,6 +25,7 @@ public abstract class BaseMissionParser implements MissionParser {
         throw new MissionParseException("Неподдерживаемый формат файла: " + file.getName());
     }
 
+    @Override
     public abstract boolean canHandle(File file);
     protected abstract Mission doParse(File file) throws MissionParseException;
 }
